@@ -3,7 +3,7 @@ import XCTest
 
 final class SQLiteAdapterTests: XCTestCase {
     func testCreatingAndOpeningDB() throws {
-        let sql = try? SQLite(path: "")
-        XCTAssertEqual(sql != nil, true)
+        let sqliteDB = try? SQLite(path: "")
+        XCTAssertEqual(sqliteDB != nil, true)
     }
 }

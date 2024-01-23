@@ -94,7 +94,9 @@ open class SQLite {
     }
     
     private func log(_ str: String) {
+        #if DEBUG
         print("SQLite: \(str)")
+        #endif
     }
     
     private func prepareStatement(sql: String) throws -> OpaquePointer? {

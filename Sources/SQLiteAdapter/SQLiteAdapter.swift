@@ -47,7 +47,7 @@ public typealias SQLValues = [(type: SQLType, value: Any?)]
 
 open class SQLite {
     
-    private var dbPointer: OpaquePointer?
+    public private(set) var dbPointer: OpaquePointer?
     
     private let SQLITE_STATIC = unsafeBitCast(0, to: sqlite3_destructor_type.self)
     private let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
@@ -86,18 +86,18 @@ open class SQLite {
         }
     }
     
+    private func log(_ str: String) {
+        #if DEBUG
+        print("SQLite: \(str)")
+        #endif
+    }
+    
     private func getErrorMessage(dbPointer: OpaquePointer?) -> String {
         if let errorPointer = sqlite3_errmsg(dbPointer) {
             let errorMessage = String(cString: errorPointer)
             return errorMessage
         }
         return "SQLite error"
-    }
-    
-    private func log(_ str: String) {
-        #if DEBUG
-        print("SQLite: \(str)")
-        #endif
     }
     
     private func prepareStatement(sql: String) throws -> OpaquePointer? {

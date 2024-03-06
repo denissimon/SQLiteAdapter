@@ -35,7 +35,7 @@ To install SQLiteAdapter using [Carthage](https://github.com/Carthage/Carthage),
 github "denissimon/SQLiteAdapter"
 ```
 
-### Manually
+#### Manually
 
 Copy `SQLiteAdapter.swift` into your project.
 

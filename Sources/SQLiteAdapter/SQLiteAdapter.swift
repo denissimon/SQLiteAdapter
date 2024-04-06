@@ -191,6 +191,15 @@ open class SQLite {
         log("successfully created table, sql: \(sql)")
     }
     
+    public func checkIfTableExists(_ tableName: String) throws -> Bool {
+        if let count = try? getRowCountWithCondition(sql: "SELECT count(*) FROM sqlite_schema WHERE type='table' AND name='\(tableName)';", valuesToBind: nil) {
+            let result = count == 1 ? true : false
+            log("successfully checked if \(tableName) exists: \(result)")
+            return result
+        }
+        throw SQLiteError.Other(getErrorMessage(dbPointer: dbPointer))
+    }
+    
     public func dropTable(_ tableName: String, vacuum: Bool = true) throws {
         let sql = "DROP TABLE IF EXISTS \(tableName);"
         try operation(sql: sql)

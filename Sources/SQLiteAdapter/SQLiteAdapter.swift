@@ -294,7 +294,7 @@ open class SQLite {
         return Int(count)
     }
     
-    public func getRowCountWithCondition(sql: String, valuesToBind: SQLValues) throws -> Int {
+    public func getRowCountWithCondition(sql: String, valuesToBind: SQLValues? = nil) throws -> Int {
         let sqlStatement = try prepareStatement(sql: sql)
         defer {
             sqlite3_finalize(sqlStatement)

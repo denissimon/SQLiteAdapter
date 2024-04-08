@@ -49,7 +49,6 @@ public protocol SQLiteType {
     func createTable(sql: String) throws
     func checkIfTableExists(_ tableName: String) throws -> Bool
     func dropTable(_ tableName: String, vacuum: Bool) throws
-    func deleteAllRows(in tableName: String, vacuum: Bool, resetAutoincrement: Bool) throws
     func addIndex(to tableName: String, forColumn columnName: String, unique: Bool, order: SQLOrder) throws
     func checkIfIndexExists(in tableName: String, indexName: String) throws -> Bool
     func dropIndex(in tableName: String, forColumn columnName: String) throws
@@ -59,6 +58,7 @@ public protocol SQLiteType {
     func updateRow(sql: String, valuesToBind: SQLValues?) throws
     func deleteRow(sql: String, valuesToBind: SQLValues?) throws
     func deleteByID(in tableName: String, id: Int) throws
+    func deleteAllRows(in tableName: String, vacuum: Bool, resetAutoincrement: Bool) throws
     func getRowCount(in tableName: String) throws -> Int
     func getRowCountWithCondition(sql: String, valuesToBind: SQLValues?) throws -> Int
     func getRow(sql: String, valuesToBind: SQLValues?, valuesToGet: SQLValues) throws -> [SQLValues]
@@ -235,18 +235,6 @@ open class SQLite: SQLiteType {
         log("successfully droped table \(tableName)")
     }
     
-    public func deleteAllRows(in tableName: String, vacuum: Bool = true, resetAutoincrement: Bool = true) throws {
-        let sql = "DELETE FROM \(tableName);"
-        try operation(sql: sql)
-        if vacuum {
-            try self.vacuum()
-        }
-        log("successfully deleted all rows in \(tableName)")
-        if resetAutoincrement {
-            try self.resetAutoincrement(in: tableName)
-        }
-    }
-    
     public func addIndex(to tableName: String, forColumn columnName: String, unique: Bool = false, order: SQLOrder = .none) throws {
         
         let indexName = "\(tableName)_\(columnName)_idx"
@@ -322,6 +310,18 @@ open class SQLite: SQLiteType {
         let valuesToBind = SQLValues([(.INT, id)])
         try operation(sql: sql, valuesToBind: valuesToBind)
         log("successfully deleted a row by id \(id) in \(tableName)")
+    }
+    
+    public func deleteAllRows(in tableName: String, vacuum: Bool = true, resetAutoincrement: Bool = true) throws {
+        let sql = "DELETE FROM \(tableName);"
+        try operation(sql: sql)
+        if vacuum {
+            try self.vacuum()
+        }
+        log("successfully deleted all rows in \(tableName)")
+        if resetAutoincrement {
+            try self.resetAutoincrement(in: tableName)
+        }
     }
     
     public func getRowCount(in tableName: String) throws -> Int {

@@ -64,6 +64,7 @@ public protocol SQLiteType {
     func getRow(sql: String, valuesToBind: SQLValues?, valuesToGet: SQLValues) throws -> [SQLValues]
     func getAllRows(in tableName: String, valuesToGet: SQLValues) throws -> [SQLValues]
     func getByID(in tableName: String, id: Int, valuesToGet: SQLValues) throws -> SQLValues
+    func getLastRow(in tableName: String, valuesToGet: SQLValues) throws -> SQLValues
     func getLastInsertID() throws -> Int
     func vacuum() throws
     func resetAutoincrement(in tableName: String) throws
@@ -412,6 +413,17 @@ open class SQLite: SQLiteType {
         let result = try getRow(sql: sql, valuesToBind: valueToBind, valuesToGet: valuesToGet)
         if result.count == 1 {
             log("successfully read a row by id \(id) in \(tableName)")
+            return result[0]
+        } else {
+            throw SQLiteError.Column(getErrorMessage(dbPointer: dbPointer))
+        }
+    }
+    
+    public func getLastRow(in tableName: String, valuesToGet: SQLValues) throws -> SQLValues {
+        let sql = "SELECT * FROM \(tableName) WHERE id = (SELECT MAX(id) FROM \(tableName));"
+        let result = try getRow(sql: sql, valuesToBind: nil, valuesToGet: valuesToGet)
+        if result.count == 1 {
+            log("successfully read last row in \(tableName)")
             return result[0]
         } else {
             throw SQLiteError.Column(getErrorMessage(dbPointer: dbPointer))

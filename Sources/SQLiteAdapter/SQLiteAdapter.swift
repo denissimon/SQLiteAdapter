@@ -217,7 +217,7 @@ open class SQLite: SQLiteType {
     public func checkIfTableExists(_ tableName: String) throws -> Bool {
         if let count = try? getRowCountWithCondition(sql: "SELECT count(*) FROM sqlite_schema WHERE type='table' AND name='\(tableName)';", valuesToBind: nil) {
             let result = count == 1 ? true : false
-            log("successfully checked if \(tableName) exists: \(result)")
+            log("successfully checked if table \(tableName) exists: \(result)")
             return result
         }
         throw SQLiteError.Other(getErrorMessage(dbPointer: dbPointer))
@@ -265,14 +265,14 @@ open class SQLite: SQLiteType {
         }
         
         try operation(sql: sql)
-        log("successfully added index to \(tableName) for column \(columnName)")
+        log("successfully added index \(indexName)")
     }
     
     public func dropIndex(in tableName: String, forColumn columnName: String) throws {
         let indexName = "\(tableName)_\(columnName)_idx"
         let sql = "DROP INDEX IF EXISTS \"\(indexName)\";"
         try operation(sql: sql)
-        log("successfully droped index in \(tableName) for column \(columnName)")
+        log("successfully droped index \(indexName)")
     }
     
     public func beginTransaction() throws {

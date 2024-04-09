@@ -218,7 +218,7 @@ open class SQLite: SQLiteType {
     }
     
     public func checkIfTableExists(_ tableName: String) throws -> Bool {
-        if let count = try? getRowCountWithCondition(sql: "SELECT count(*) FROM sqlite_schema WHERE type='table' AND name='\(tableName)';", valuesToBind: nil) {
+        if let count = try? getRowCountWithCondition(sql: "SELECT count(*) FROM sqlite_master WHERE type='table' AND name='\(tableName)';", valuesToBind: nil) {
             let result = count == 1 ? true : false
             log("successfully checked if table \(tableName) exists: \(result)")
             return result
@@ -260,7 +260,7 @@ open class SQLite: SQLiteType {
     }
     
     public func checkIfIndexExists(in tableName: String, indexName: String) throws -> Bool {
-        if let count = try? getRowCountWithCondition(sql: "SELECT count(*) FROM sqlite_schema WHERE type='index' AND tbl_name='\(tableName)' AND name='\(indexName)';", valuesToBind: nil) {
+        if let count = try? getRowCountWithCondition(sql: "SELECT count(*) FROM sqlite_master WHERE type='index' AND tbl_name='\(tableName)' AND name='\(indexName)';", valuesToBind: nil) {
             let result = count == 1 ? true : false
             log("successfully checked if index \(indexName) exists: \(result)")
             return result
@@ -315,17 +315,17 @@ open class SQLite: SQLiteType {
     public func deleteAllRows(in tableName: String, vacuum: Bool = true, resetAutoincrement: Bool = true) throws {
         let sql = "DELETE FROM \(tableName);"
         try operation(sql: sql)
+        log("successfully deleted all rows in \(tableName)")
         if vacuum {
             try self.vacuum()
         }
-        log("successfully deleted all rows in \(tableName)")
         if resetAutoincrement {
             try self.resetAutoincrement(in: tableName)
         }
     }
     
     public func getRowCount(in tableName: String) throws -> Int {
-        let sql = "SELECT COUNT(*) FROM \(tableName);"
+        let sql = "SELECT count(*) FROM \(tableName);"
         let sqlStatement = try prepareStatement(sql: sql)
         defer {
             sqlite3_finalize(sqlStatement)
@@ -435,9 +435,6 @@ open class SQLite: SQLiteType {
         defer {
             sqlite3_finalize(sqlStatement)
         }
-        
-        try bindPlaceholders(sqlStatement: sqlStatement, valuesToBind: nil)
-        
         guard sqlite3_step(sqlStatement) == SQLITE_ROW else {
             throw SQLiteError.Step(getErrorMessage(dbPointer: dbPointer))
         }
@@ -454,7 +451,7 @@ open class SQLite: SQLiteType {
     }
     
     public func resetAutoincrement(in tableName: String) throws {
-        let sql = "UPDATE SQLITE_SEQUENCE SET SEQ=0 WHERE NAME=\"\(tableName)\";"
+        let sql = "UPDATE sqlite_sequence SET SEQ=0 WHERE name='\(tableName)';"
         try operation(sql: sql)
         log("successfully reseted autoincrement in \(tableName)")
     }

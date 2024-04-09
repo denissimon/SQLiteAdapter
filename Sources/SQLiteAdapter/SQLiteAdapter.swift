@@ -54,7 +54,7 @@ public protocol SQLiteType {
     func dropIndex(in tableName: String, forColumn columnName: String) throws
     func beginTransaction() throws
     func endTransaction() throws
-    func insertRow(sql: String, valuesToBind: SQLValues?) throws
+    func insertRow(sql: String, valuesToBind: SQLValues?) throws -> Int
     func updateRow(sql: String, valuesToBind: SQLValues?) throws
     func deleteRow(sql: String, valuesToBind: SQLValues?) throws
     func deleteByID(in tableName: String, id: Int) throws
@@ -291,9 +291,11 @@ open class SQLite: SQLiteType {
     }
     
     /// Can be used to insert one or several rows depending on the SQL statement
-    public func insertRow(sql: String, valuesToBind: SQLValues? = nil) throws {
+    /// - Returns: The id for the last inserted row
+    public func insertRow(sql: String, valuesToBind: SQLValues? = nil) throws -> Int {
         try operation(sql: sql, valuesToBind: valuesToBind)
         log("successfully inserted row(s), sql: \(sql)")
+        return Int(sqlite3_last_insert_rowid(dbPointer))
     }
     
     /// Can be used to update one or several rows depending on the SQL statement

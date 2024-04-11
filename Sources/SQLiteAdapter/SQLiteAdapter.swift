@@ -16,6 +16,7 @@ public enum SQLiteError: Error {
     case Step(_ msg: String)
     case Bind(_ msg: String)
     case Column(_ msg: String)
+    case Statement(_ msg: String)
     case Other(_ msg: String)
 }
 
@@ -220,6 +221,9 @@ open class SQLite: SQLiteType {
     }
     
     public func createTable(sql: String) throws {
+        guard sql.uppercased().trimmingCharacters(in: .whitespaces).hasPrefix("CREATE ") else {
+            throw SQLiteError.Statement("Invalid SQL statement")
+        }
         try operation(sql: sql)
         log("successfully created table, sql: \(sql)")
     }
@@ -297,6 +301,9 @@ open class SQLite: SQLiteType {
     /// Can be used to insert one or several rows depending on the SQL statement
     /// - Returns: The id for the last inserted row
     public func insertRow(sql: String, valuesToBind: SQLValues? = nil) throws -> Int {
+        guard sql.uppercased().trimmingCharacters(in: .whitespaces).hasPrefix("INSERT ") else {
+            throw SQLiteError.Statement("Invalid SQL statement")
+        }
         try operation(sql: sql, valuesToBind: valuesToBind)
         log("successfully inserted row(s), sql: \(sql)")
         return getLastInsertID()
@@ -304,12 +311,18 @@ open class SQLite: SQLiteType {
     
     /// Can be used to update one or several rows depending on the SQL statement
     public func updateRow(sql: String, valuesToBind: SQLValues? = nil) throws {
+        guard sql.uppercased().trimmingCharacters(in: .whitespaces).hasPrefix("UPDATE ") else {
+            throw SQLiteError.Statement("Invalid SQL statement")
+        }
         try operation(sql: sql, valuesToBind: valuesToBind)
         log("successfully updated row(s), sql: \(sql)")
     }
     
     /// Can be used to delete one or several rows depending on the SQL statement
     public func deleteRow(sql: String, valuesToBind: SQLValues? = nil) throws {
+        guard sql.uppercased().trimmingCharacters(in: .whitespaces).hasPrefix("DELETE ") else {
+            throw SQLiteError.Statement("Invalid SQL statement")
+        }
         try operation(sql: sql, valuesToBind: valuesToBind)
         log("successfully deleted row(s), sql: \(sql)")
     }
@@ -348,6 +361,10 @@ open class SQLite: SQLiteType {
     }
     
     public func getRowCountWithCondition(sql: String, valuesToBind: SQLValues? = nil) throws -> Int {
+        guard sql.uppercased().trimmingCharacters(in: .whitespaces).hasPrefix("SELECT ") else {
+            throw SQLiteError.Statement("Invalid SQL statement")
+        }
+        
         let sqlStatement = try prepareStatement(sql: sql)
         defer {
             sqlite3_finalize(sqlStatement)
@@ -365,6 +382,10 @@ open class SQLite: SQLiteType {
     
     /// Can be used to read one or several rows depending on the SQL statement
     public func getRow(sql: String, valuesToBind: SQLValues? = nil, valuesToGet: SQLValues) throws -> [SQLValues] {
+        guard sql.uppercased().trimmingCharacters(in: .whitespaces).hasPrefix("SELECT ") else {
+            throw SQLiteError.Statement("Invalid SQL statement")
+        }
+        
         let sqlStatement = try prepareStatement(sql: sql)
         defer {
             sqlite3_finalize(sqlStatement)

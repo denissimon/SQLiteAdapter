@@ -15,6 +15,10 @@
 		4142F43D2B5FA132000339D7 /* SQLiteAdapter.h in Headers */ = {isa = PBXBuildFile; fileRef = 4142F43B2B5FA132000339D7 /* SQLiteAdapter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4142F43E2B5FA132000339D7 /* SQLiteAdapter.h in Headers */ = {isa = PBXBuildFile; fileRef = 4142F43B2B5FA132000339D7 /* SQLiteAdapter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4142F43F2B5FA132000339D7 /* SQLiteAdapter.h in Headers */ = {isa = PBXBuildFile; fileRef = 4142F43B2B5FA132000339D7 /* SQLiteAdapter.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		418BF6942BC908CE0002F360 /* SQLTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 418BF6932BC908CE0002F360 /* SQLTable.swift */; };
+		418BF6952BC908CE0002F360 /* SQLTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 418BF6932BC908CE0002F360 /* SQLTable.swift */; };
+		418BF6962BC908CE0002F360 /* SQLTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 418BF6932BC908CE0002F360 /* SQLTable.swift */; };
+		418BF6972BC908CE0002F360 /* SQLTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 418BF6932BC908CE0002F360 /* SQLTable.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +28,7 @@
 		4142F42B2B5F9F49000339D7 /* SQLiteAdapter.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SQLiteAdapter.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4142F4332B5F9FF4000339D7 /* SQLiteAdapter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SQLiteAdapter.swift; path = Sources/SQLiteAdapter/SQLiteAdapter.swift; sourceTree = "<group>"; };
 		4142F43B2B5FA132000339D7 /* SQLiteAdapter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SQLiteAdapter.h; path = Sources/SQLiteAdapter/SQLiteAdapter.h; sourceTree = "<group>"; };
+		418BF6932BC908CE0002F360 /* SQLTable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SQLTable.swift; path = Sources/SQLiteAdapter/SQLTable.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -81,6 +86,7 @@
 			isa = PBXGroup;
 			children = (
 				4142F4332B5F9FF4000339D7 /* SQLiteAdapter.swift */,
+				418BF6932BC908CE0002F360 /* SQLTable.swift */,
 				4142F43B2B5FA132000339D7 /* SQLiteAdapter.h */,
 			);
 			name = Sources;
@@ -281,6 +287,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4142F4342B5F9FF4000339D7 /* SQLiteAdapter.swift in Sources */,
+				418BF6942BC908CE0002F360 /* SQLTable.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -289,6 +296,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4142F4352B5F9FF4000339D7 /* SQLiteAdapter.swift in Sources */,
+				418BF6952BC908CE0002F360 /* SQLTable.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -297,6 +305,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4142F4362B5F9FF4000339D7 /* SQLiteAdapter.swift in Sources */,
+				418BF6962BC908CE0002F360 /* SQLTable.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -305,6 +314,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4142F4372B5F9FF4000339D7 /* SQLiteAdapter.swift in Sources */,
+				418BF6972BC908CE0002F360 /* SQLTable.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

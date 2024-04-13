@@ -37,7 +37,7 @@ github "denissimon/SQLiteAdapter"
 
 #### Manually
 
-Copy `SQLiteAdapter.swift` into your project.
+Copy folder `SQLiteAdapter` into your project.
 
 License
 -------

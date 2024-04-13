@@ -379,11 +379,15 @@ open class SQLite: SQLiteType {
         
         while sqlite3_step(sqlStatement) == SQLITE_ROW {
             rowValues = SQLValues([])
-            for (index,value) in table.columnTypes.enumerated() {
+            for (index, value) in table.columnTypes.enumerated() {
                 
                 let index = Int32(index) // column serial number, should start with 0
                 
                 // Check for data types of returned values
+                guard sqlite3_column_type(sqlStatement, index) != SQLITE_NULL else {
+                    rowValues.append((value.type, nil))
+                    continue
+                }
                 switch value.type {
                 case .INT:
                     let intValue = sqlite3_column_int64(sqlStatement, index)
@@ -463,7 +467,6 @@ open class SQLite: SQLiteType {
         }
     }
     
-    /// Returns the id of the last row inserted
     public func getLastInsertID() -> Int {
         return Int(sqlite3_last_insert_rowid(dbPointer))
     }

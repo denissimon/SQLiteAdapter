@@ -10,12 +10,12 @@
 open class SQLTable {
     
     public let name: String
-    public let columnTypes: SQLValues
+    public let columns: SQLTableColums
     public let primaryKey: String
     
-    public init(name: String, columnTypes: SQLValues, primaryKey: String = "id") {
+    public init(name: String, columns: SQLTableColums, primaryKey: String = "id") {
         self.name = name
-        self.columnTypes = columnTypes
+        self.columns = columns
         self.primaryKey = primaryKey
     }
 }

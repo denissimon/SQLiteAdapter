@@ -445,6 +445,7 @@ open class SQLite: SQLiteType {
         return allRows
     }
     
+    /// Checks the structure of the result table and synchronizes it in SQLTableColums
     private func getResultColumns(_ table: SQLTable, sqlStatement: OpaquePointer?) throws -> SQLTableColums {
         var columnNamesToReturn: [String] = []
         let columnCount = sqlite3_column_count(sqlStatement)

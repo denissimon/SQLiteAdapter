@@ -22,7 +22,7 @@ Enter Package URL: https://github.com/denissimon/SQLiteAdapter
 To install SQLiteAdapter using [CocoaPods](https://cocoapods.org), add this line to your `Podfile`:
 
 ```ruby
-pod 'SQLiteAdapter', '~> 0.5'
+pod 'SQLiteAdapter', '~> 0.6'
 ```
 
 #### Carthage

@@ -3,7 +3,7 @@
 [![Swift](https://img.shields.io/badge/Swift-5-orange.svg?style=flat)](https://swift.org)
 [![Platform](https://img.shields.io/badge/platform-iOS%20%7C%20macOS%20%7C%20watchOS%20%7C%20tvOS-lightgrey.svg)](https://developer.apple.com/swift/)
 
-A simple wrapper around the SQLite3 API.
+A simple wrapper around SQLite3.
 
 Installation
 ------------
@@ -22,7 +22,7 @@ Enter Package URL: https://github.com/denissimon/SQLiteAdapter
 To install SQLiteAdapter using [CocoaPods](https://cocoapods.org), add this line to your `Podfile`:
 
 ```ruby
-pod 'SQLiteAdapter', '~> 0.6'
+pod 'SQLiteAdapter', '~> 0.7'
 ```
 
 #### Carthage
@@ -84,19 +84,20 @@ try? sqlite?.createTable(sql: statementCreateTable)
 ```swift
 do {
     var sql = "INSERT INTO \(sqlTable.name) (json, updated) VALUES (?, ?);"
-    let _ = try sqlite.insertRow(sql: sql, params: ["someJson", Date()])
+    try sqlite.insertRow(sql: sql, params: ["someJson", Date()])
     
     sql = "INSERT INTO \(sqlTable.name) (json, updated) VALUES (?, ?), (?, ?);"
-    let lastInsertID = try sqlite.insertRow(sql: sql, params: [nil, Date(), nil, Date()])
-    assert(lastInsertID == 3)
+    let (changes, lastInsertID) = try sqlite.insertRow(sql: sql, params: [nil, Date(), nil, Date()])
+    assert((changes, lastInsertID) == (2, 3))
     
     sql = "UPDATE \(sqlTable.name) SET isDeleted = ?, updated = ? WHERE \(sqlTable.primaryKey) IN (2, 3)"
     try sqlite.updateRow(sql: sql, params: [true, Date()])
     assert(sqlite.changes == 2)
     
     sql = "SELECT * FROM \(sqlTable.name) WHERE isDeleted = ?"
-    let rows = try sqlite.getRow(from: sqlTable, sql: sql, params: [true])
-    assert(rows.count == 2)
+    if let rows = try sqlite.getRow(from: sqlTable, sql: sql, params: [true])
+        assert(rows.count == 2)
+    }
     
     try sqlite.deleteByID(in: sqlTable, id: 2)
     try sqlite.deleteByID(in: sqlTable, id: 3)
@@ -104,14 +105,23 @@ do {
     let rowCount = try sqlite.getRowCount(in: sqlTable)
     assert(rowCount == 1)
     
-    var row = try sqlite.getFirstRow(from: sqlTable)
-    assert(row[0].value as! Int == 1) // "id" INTEGER NOT NULL
-    assert(row[1].value as? String == "someJson") // "json" TEXT NULL
-    assert(row[2].value as! Bool == false) // "isDeleted" BOOLEAN DEFAULT 0 NOT NULL
-    assert((row[3].value as! Date) <= Date()) // "updated" DATETIME NOT NULL
+    if let row = try sqlite.getFirstRow(from: sqlTable) {
+        assert(row[0].value as! Int == 1) // "id" INTEGER NOT NULL
+        assert(row[1].value as? String == "someJson") // "json" TEXT NULL
+        assert(row[2].value as! Bool == false) // "isDeleted" BOOLEAN DEFAULT 0 NOT NULL
+        assert((row[3].value as! Date) <= Date()) // "updated" DATETIME NOT NULL
+    }
 } catch {
-    print("SQLite:", error.localizedDescription)
+    print("SQLite:", error)
 }
+```
+
+```swift
+// Read methods return nil if no rows have been read
+let row = try sqlite.getByID(from: sqlTable, id: 10) // -> nil
+
+// Insert, update, and delete methods return the number of changes made
+let changes = try sqlite.deleteAllRows(in: sqlTable) // -> 1
 ```
 
 **Optional settings:**
@@ -148,21 +158,26 @@ func checkIfIndexExists(in table: SQLTable, indexName: String) throws -> Bool
 func dropIndex(in table: SQLTable, forColumn columnName: String) throws
 func beginTransaction() throws
 func endTransaction() throws
-func insertRow(sql: String, params: [Any]?) throws -> Int
-func updateRow(sql: String, params: [Any]?) throws
-func deleteRow(sql: String, params: [Any]?) throws
-func deleteByID(in table: SQLTable, id: Int) throws
-func deleteAllRows(in table: SQLTable, vacuum: Bool, resetAutoincrement: Bool) throws
+func insertRow(sql: String, params: [Any]?) throws -> (Int, Int)
+func updateRow(sql: String, params: [Any]?) throws -> Int
+func deleteRow(sql: String, params: [Any]?) throws -> Int
+func deleteByID(in table: SQLTable, id: Int) throws -> Int
+func deleteAllRows(in table: SQLTable, vacuum: Bool, resetAutoincrement: Bool) throws -> Int
 func getRowCount(in table: SQLTable) throws -> Int
 func getRowCountWithCondition(sql: String, params: [Any]?) throws -> Int
-func getRow(from table: SQLTable, sql: String, params: [Any]?) throws -> [SQLValues]
-func getAllRows(from table: SQLTable) throws -> [SQLValues]
-func getByID(from table: SQLTable, id: Int) throws -> SQLValues
-func getFirstRow(from table: SQLTable) throws -> SQLValues
-func getLastRow(from table: SQLTable) throws -> SQLValues
+func getRow(from table: SQLTable, sql: String, params: [Any]?) throws -> [SQLValues]?
+func getAllRows(from table: SQLTable) throws -> [SQLValues]?
+func getByID(from table: SQLTable, id: Int) throws -> SQLValues?
+func getFirstRow(from table: SQLTable) throws -> SQLValues?
+func getLastRow(from table: SQLTable) throws -> SQLValues?
 func vacuum() throws
-func query(sql: String, params: [Any]?) throws
+func query(sql: String, params: [Any]?) throws -> Int
 ```
+
+Requirements
+------------
+
+iOS 12.0+, macOS 10.13.0+, tvOS 12.0+, watchOS 4.0+
 
 License
 -------

@@ -158,7 +158,7 @@ func checkIfIndexExists(in table: SQLTable, indexName: String) throws -> Bool
 func dropIndex(in table: SQLTable, forColumn columnName: String) throws
 func beginTransaction() throws
 func endTransaction() throws
-func insertRow(sql: String, params: [Any]?) throws -> (Int, Int)
+func insertRow(sql: String, params: [Any]?) throws -> (changes: Int, lastInsertID: Int)
 func updateRow(sql: String, params: [Any]?) throws -> Int
 func deleteRow(sql: String, params: [Any]?) throws -> Int
 func deleteByID(in table: SQLTable, id: Int) throws -> Int

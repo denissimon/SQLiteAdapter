@@ -58,7 +58,7 @@ public protocol SQLiteType {
     func dropIndex(in table: SQLTable, forColumn columnName: String) throws
     func beginTransaction() throws
     func endTransaction() throws
-    func insertRow(sql: String, params: [Any]?) throws -> (Int, Int)
+    func insertRow(sql: String, params: [Any]?) throws -> (changes: Int, lastInsertID: Int)
     func updateRow(sql: String, params: [Any]?) throws -> Int
     func deleteRow(sql: String, params: [Any]?) throws -> Int
     func deleteByID(in table: SQLTable, id: Int) throws -> Int
@@ -324,7 +324,7 @@ open class SQLite: SQLiteType {
     /// Can be used to insert one or several rows depending on the SQL statement
     /// - Returns: (the number of inserted rows, id for the last inserted row)
     @discardableResult
-    public func insertRow(sql: String, params: [Any]? = nil) throws -> (Int, Int) {
+    public func insertRow(sql: String, params: [Any]? = nil) throws -> (changes: Int, lastInsertID: Int) {
         guard sql.uppercased().trimmingCharacters(in: .whitespaces).hasPrefix("INSERT ") else {
             throw SQLiteError.Statement("Invalid SQL statement")
         }

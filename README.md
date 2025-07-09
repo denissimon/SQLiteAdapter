@@ -40,19 +40,19 @@ Copy folder `SQLiteAdapter` into your project.
 Usage
 -----
 
-**Opening the database:**
+**Opening the database**
 
 ```swift
 import SQLiteAdapter
 
-// The sqlite file will be created in the specified path if it has not yet been created
-let dbPath = try! (FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false).appendingPathComponent("db.sqlite")).path
+let dbPath = try! (FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
+    .appendingPathComponent("db.sqlite")).path // the sqlite file will be created if it does not already exist
 let sqlite = try? SQLite(path: dbPath) // with 'recreate: true', the sqlite file will be deleted and recreated
 
-print(sqlite.dbPath) // -> the path of the sqlite file
+print(sqlite.dbPath) // -> path of the sqlite file
 ```
 
-**Modeling and creating an SQL table:**
+**Modeling and creating a table**
 
 ```swift
 let sqlTable = SQLTable(
@@ -63,7 +63,7 @@ let sqlTable = SQLTable(
         ("isDeleted", .BOOL),
         ("updated", .DATE)
     ],
-    primaryKey: "id" // optionally ("id" by default)
+    primaryKey: "id" // "id" by default
 )
 
 let statementCreateTable = """
@@ -79,7 +79,7 @@ let statementCreateTable = """
 try? sqlite?.createTable(sql: statementCreateTable)
 ```
 
-**SQL operations:**
+**SQL operations**
 
 ```swift
 do {
@@ -124,7 +124,7 @@ let row = try sqlite.getByID(from: sqlTable, id: 10) // -> nil
 let changes = try sqlite.deleteAllRows(in: sqlTable) // -> 1
 ```
 
-**Optional settings:**
+**Optional settings**
 
 ```swift
 sqlite.dateFormatter.locale = Locale(identifier: "en_US_POSIX")
@@ -132,7 +132,7 @@ sqlite.dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
 sqlite.dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
 ```
  
-More usage examples can be found in [SQLiteAdapterTests.swift](https://github.com/denissimon/SQLiteAdapter/blob/main/Tests/SQLiteAdapterTests/SQLiteAdapterTests.swift) and [iOS-MVVM-Clean-Architecture](https://github.com/denissimon/iOS-MVVM-Clean-Architecture) where this adapter was used.
+More usage examples can be found in [tests](https://github.com/denissimon/SQLiteAdapter/blob/main/Tests/SQLiteAdapterTests/SQLiteAdapterTests.swift) and [iOS-MVVM-Clean-Architecture](https://github.com/denissimon/iOS-MVVM-Clean-Architecture) where this adapter was used.
 
 ### Supported SQLite types
 

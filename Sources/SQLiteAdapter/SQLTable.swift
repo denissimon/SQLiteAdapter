@@ -7,7 +7,7 @@
 //  MIT License (https://github.com/denissimon/SQLiteAdapter/blob/main/LICENSE)
 //
 
-open class SQLTable {
+final public class SQLTable: Sendable {
     
     public let name: String
     public let columns: SQLTableColums

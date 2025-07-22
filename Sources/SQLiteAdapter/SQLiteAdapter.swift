@@ -24,7 +24,7 @@ public enum SQLiteError: Error {
 }
 
 /// http://www.sqlite.org/datatype3.html
-public enum SQLType {
+public enum SQLType: Sendable {
     case INT // Includes INT, INTEGER, INT2, INT8, BIGINT, MEDIUMINT, SMALLINT, TINYINT
     case BOOL // Includes BOOL, BOOLEAN, BIT
     case TEXT // Includes TEXT, CHAR, CHARACTER, VARCHAR, CLOB, VARIANT, VARYING_CHARACTER, NATIONAL_VARYING_CHARACTER, NATIVE_CHARACTER, NCHAR, NVARCHAR
@@ -33,7 +33,7 @@ public enum SQLType {
     case DATE // Includes DATE, DATETIME, TIME, TIMESTAMP
 }
 
-public enum SQLOrder {
+public enum SQLOrder: Sendable {
     case ASC
     case DESC
     case none
@@ -49,7 +49,7 @@ public enum SQLOrder {
 public typealias SQLTableColums = [(name: String, type: SQLType)]
 public typealias SQLValues = [(type: SQLType, value: Any?)]
 
-public protocol SQLiteType {
+public protocol SQLiteType: Sendable {
     var lastInsertID: Int { get }
     var changes: Int { get }
     var totalChanges: Int { get }
@@ -77,17 +77,17 @@ public protocol SQLiteType {
     func query(sql: String, params: [Any]?) throws -> Int
 }
 
-open class SQLite: SQLiteType {
+final public class SQLite: SQLiteType {
     
-    public private(set) var dbPointer: OpaquePointer?
-    public private(set) var dbPath: String!
+    nonisolated(unsafe) public private(set) var dbPointer: OpaquePointer?
+    nonisolated(unsafe) public private(set) var dbPath: String!
     
     private let SQLITE_STATIC = unsafeBitCast(0, to: sqlite3_destructor_type.self)
     private let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
     
     private let queue = DispatchQueue(label: "SQLite Queue")
     
-    public var dateFormatter = DateFormatter()
+    public let dateFormatter = DateFormatter()
     
     public var lastInsertID: Int {
         var id = 0

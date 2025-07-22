@@ -1,6 +1,6 @@
 # SQLiteAdapter
 
-[![Swift](https://img.shields.io/badge/Swift-5-orange.svg?style=flat)](https://swift.org)
+[![Swift](https://img.shields.io/badge/Swift-6-orange.svg?style=flat)](https://swift.org)
 [![Platform](https://img.shields.io/badge/platform-iOS%20%7C%20macOS%20%7C%20watchOS%20%7C%20tvOS%20%7C%20Linux-lightgrey.svg)](https://developer.apple.com/swift/)
 
 A simple wrapper around SQLite3.
@@ -14,7 +14,7 @@ To install SQLiteAdapter using [Swift Package Manager](https://swift.org/package
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/denissimon/SQLiteAdapter.git", from: "0.7.5")
+    .package(url: "https://github.com/denissimon/SQLiteAdapter.git", from: "0.8.0")
 ]
 ```
 
@@ -30,7 +30,7 @@ Enter Package URL: https://github.com/denissimon/SQLiteAdapter
 To install SQLiteAdapter using [CocoaPods](https://cocoapods.org), add this line to your `Podfile`:
 
 ```ruby
-pod 'SQLiteAdapter', '~> 0.7'
+pod 'SQLiteAdapter', '~> 0.8'
 ```
 
 #### Carthage
@@ -150,18 +150,16 @@ Supported SQLite types
 ----------------------
 
 ```swift
-case INT // Includes INT, INTEGER, INT2, INT8, BIGINT, MEDIUMINT, SMALLINT, TINYINT
-case BOOL // Includes BOOL, BOOLEAN, BIT
-case TEXT // Includes TEXT, CHAR, CHARACTER, VARCHAR, CLOB, VARIANT, VARYING_CHARACTER, NATIONAL_VARYING_CHARACTER, NATIVE_CHARACTER, NCHAR, NVARCHAR
-case REAL // Includes REAL, DOUBLE, FLOAT, NUMERIC, DECIMAL, DOUBLE_PRECISION
-case BLOB // Includes BLOB, BINARY, VARBINARY
-case DATE // Includes DATE, DATETIME, TIME, TIMESTAMP
+INT // Includes INT, INTEGER, INT2, INT8, BIGINT, MEDIUMINT, SMALLINT, TINYINT
+BOOL // Includes BOOL, BOOLEAN, BIT
+TEXT // Includes TEXT, CHAR, CHARACTER, VARCHAR, CLOB, VARIANT, VARYING_CHARACTER, NATIONAL_VARYING_CHARACTER, NATIVE_CHARACTER, NCHAR, NVARCHAR
+REAL // Includes REAL, DOUBLE, FLOAT, NUMERIC, DECIMAL, DOUBLE_PRECISION
+BLOB // Includes BLOB, BINARY, VARBINARY
+DATE // Includes DATE, DATETIME, TIME, TIMESTAMP
 ```
 
 Public methods 
 --------------
-
-Can be extended and customized by inheriting the [SQLite](https://github.com/denissimon/SQLiteAdapter/blob/main/Sources/SQLiteAdapter/SQLiteAdapter.swift) class.
 
 ```swift
 func createTable(sql: String) throws

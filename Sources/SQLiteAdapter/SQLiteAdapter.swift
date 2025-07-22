@@ -9,6 +9,9 @@
 
 import Foundation
 import SQLite3
+#if os(Linux)
+import Dispatch
+#endif
 
 public enum SQLiteError: Error {
     case OpenDB(_ msg: String)
@@ -20,7 +23,7 @@ public enum SQLiteError: Error {
     case Other(_ msg: String)
 }
 
-// http://www.sqlite.org/datatype3.html
+/// http://www.sqlite.org/datatype3.html
 public enum SQLType {
     case INT // Includes INT, INTEGER, INT2, INT8, BIGINT, MEDIUMINT, SMALLINT, TINYINT
     case BOOL // Includes BOOL, BOOLEAN, BIT
@@ -95,7 +98,7 @@ open class SQLite: SQLiteType {
         return id
     }
     
-    /// - Returns: the number of rows changed by the most recently completed INSERT, DELETE or UPDATE statement
+    /// - Returns: The number of rows changed by the most recently completed `INSERT`, `DELETE` or `UPDATE` statement.
     public var changes: Int {
         var changes = 0
         queue.sync {
@@ -105,7 +108,7 @@ open class SQLite: SQLiteType {
         return changes
     }
     
-    /// - Returns: the number of rows changed by INSERT, DELETE or UPDATE statements since the current DB was opened
+    /// - Returns: The number of rows changed by `INSERT`, `DELETE` or `UPDATE` statements since the current DB was opened.
     public var totalChanges: Int {
         var totalChanges = 0
         queue.sync {
@@ -321,7 +324,7 @@ open class SQLite: SQLiteType {
         log("COMMIT")
     }
     
-    /// Can be used to insert one or several rows depending on the SQL statement
+    /// Can be used to insert one or several rows depending on the SQL statement.
     /// - Returns: (the number of inserted rows, id for the last inserted row)
     @discardableResult
     public func insertRow(sql: String, params: [Any]? = nil) throws -> (changes: Int, lastInsertID: Int) {
@@ -337,8 +340,8 @@ open class SQLite: SQLiteType {
         return (changes, lastInsertID)
     }
     
-    /// Can be used to update one or several rows depending on the SQL statement
-    /// - Returns: the number of updated rows
+    /// Can be used to update one or several rows depending on the SQL statement.
+    /// - Returns: The number of updated rows.
     @discardableResult
     public func updateRow(sql: String, params: [Any]? = nil) throws -> Int {
         guard sql.uppercased().trimmingCharacters(in: .whitespaces).hasPrefix("UPDATE ") else {
@@ -353,8 +356,8 @@ open class SQLite: SQLiteType {
         return changes
     }
     
-    /// Can be used to delete one or several rows depending on the SQL statement
-    /// - Returns: the number of deleted rows
+    /// Can be used to delete one or several rows depending on the SQL statement.
+    /// - Returns: The number of deleted rows.
     @discardableResult
     public func deleteRow(sql: String, params: [Any]? = nil) throws -> Int {
         guard sql.uppercased().trimmingCharacters(in: .whitespaces).hasPrefix("DELETE ") else {
@@ -369,7 +372,7 @@ open class SQLite: SQLiteType {
         return changes
     }
     
-    /// - Returns: 1 if the row with the specified id was deleted, otherwise returns 0
+    /// - Returns: 1 if the row with the specified id was deleted, otherwise returns 0.
     @discardableResult
     public func deleteByID(in table: SQLTable, id: Int) throws -> Int {
         let sql = "DELETE FROM \(table.name) WHERE \(table.primaryKey) = ?;"
@@ -382,7 +385,7 @@ open class SQLite: SQLiteType {
         return changes
     }
     
-    /// - Returns: the number of deleted rows
+    /// - Returns: The number of deleted rows.
     @discardableResult
     public func deleteAllRows(in table: SQLTable, vacuum: Bool = true, resetAutoincrement: Bool = true) throws -> Int {
         let sql = "DELETE FROM \(table.name);"
@@ -440,8 +443,8 @@ open class SQLite: SQLiteType {
         return Int(count)
     }
     
-    /// Can be used to read one or several rows depending on the SQL statement
-    /// - Returns: [SQLValues] if one or more rows were selected, otherwise returns nil
+    /// Can be used to read one or several rows depending on the SQL statement.
+    /// - Returns: `[SQLValues]` if one or more rows were selected, otherwise returns `nil`.
     public func getRow(from table: SQLTable, sql: String, params: [Any]? = nil) throws -> [SQLValues]? {
         guard sql.uppercased().trimmingCharacters(in: .whitespaces).hasPrefix("SELECT ") else {
             throw SQLiteError.Statement("Invalid SQL statement")
@@ -530,7 +533,7 @@ open class SQLite: SQLiteType {
         }
     }
     
-    /// Checks the structure of the result table and synchronizes it in SQLTableColums
+    /// Checks the structure of the result table and synchronizes it in `SQLTableColums`.
     private func getResultColumns(_ table: SQLTable, sqlStatement: OpaquePointer?) throws -> SQLTableColums {
         var columnNamesToReturn: [String] = []
         let columnCount = sqlite3_column_count(sqlStatement)
@@ -554,7 +557,7 @@ open class SQLite: SQLiteType {
         return resultColumns
     }
     
-    /// - Returns: [SQLValues] if one or more rows were selected, otherwise returns nil
+    /// - Returns: `[SQLValues]` if one or more rows were selected, otherwise returns `nil`.
     public func getAllRows(from table: SQLTable) throws -> [SQLValues]? {
         let sql = "SELECT * FROM \(table.name);"
         if let result = try getRow(from: table, sql: sql) {
@@ -564,7 +567,7 @@ open class SQLite: SQLiteType {
         return nil
     }
     
-    /// - Returns: SQLValues if a row was selected, otherwise returns nil
+    /// - Returns: `SQLValues` if a row was selected, otherwise returns `nil`.
     public func getByID(from table: SQLTable, id: Int) throws -> SQLValues? {
         let sql = "SELECT * FROM \(table.name) WHERE \(table.primaryKey) = ? LIMIT 1;"
         if let result = try getRow(from: table, sql: sql, params: [id]) {
@@ -574,7 +577,7 @@ open class SQLite: SQLiteType {
         return nil
     }
     
-    /// - Returns: SQLValues if a row was selected, otherwise returns nil
+    /// - Returns: `SQLValues` if a row was selected, otherwise returns `nil`.
     public func getFirstRow(from table: SQLTable) throws -> SQLValues? {
         let sql = "SELECT * FROM \(table.name) WHERE \(table.primaryKey) = (SELECT MIN(\(table.primaryKey)) FROM \(table.name));"
         if let result = try getRow(from: table, sql: sql) {
@@ -584,7 +587,7 @@ open class SQLite: SQLiteType {
         return nil
     }
     
-    /// - Returns: SQLValues if a row was selected, otherwise returns nil
+    /// - Returns: `SQLValues` if a row was selected, otherwise returns `nil`.
     public func getLastRow(from table: SQLTable) throws -> SQLValues? {
         let sql = "SELECT * FROM \(table.name) WHERE \(table.primaryKey) = (SELECT MAX(\(table.primaryKey)) FROM \(table.name));"
         if let result = try getRow(from: table, sql: sql) {
@@ -594,15 +597,15 @@ open class SQLite: SQLiteType {
         return nil
     }
     
-    /// Repacks the DB to take advantage of deleted data
+    /// Repacks the DB to take advantage of deleted data.
     public func vacuum() throws {
         let sql = "VACUUM;"
         try operation(sql: sql)
         log("VACUUM")
     }
     
-    /// Any other query except reading
-    /// - Returns: the number of  rows changed
+    /// Any other query except reading.
+    /// - Returns: The number of  rows changed.
     @discardableResult
     public func query(sql: String, params: [Any]? = nil) throws -> Int {
         let changes = try operation(sql: sql, params: params)

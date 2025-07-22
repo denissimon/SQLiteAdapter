@@ -1,7 +1,7 @@
 # SQLiteAdapter
 
 [![Swift](https://img.shields.io/badge/Swift-5-orange.svg?style=flat)](https://swift.org)
-[![Platform](https://img.shields.io/badge/platform-iOS%20%7C%20macOS%20%7C%20watchOS%20%7C%20tvOS-lightgrey.svg)](https://developer.apple.com/swift/)
+[![Platform](https://img.shields.io/badge/platform-iOS%20%7C%20macOS%20%7C%20watchOS%20%7C%20tvOS%20%7C%20Linux-lightgrey.svg)](https://developer.apple.com/swift/)
 
 A simple wrapper around SQLite3.
 
@@ -10,10 +10,18 @@ Installation
 
 #### Swift Package Manager
 
-To install SQLiteAdapter using [Swift Package Manager](https://swift.org/package-manager):
+To install SQLiteAdapter using [Swift Package Manager](https://swift.org/package-manager), add the following in your `Package.swift`:
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/denissimon/SQLiteAdapter.git", from: "0.7.5")
+]
+```
+
+Or through Xcode:
 
 ```txt
-Xcode: File -> Add Packages
+File -> Add Packages
 Enter Package URL: https://github.com/denissimon/SQLiteAdapter
 ```
 
@@ -40,7 +48,7 @@ Copy folder `SQLiteAdapter` into your project.
 Usage
 -----
 
-**Opening the database**
+### Open the database
 
 ```swift
 import SQLiteAdapter
@@ -52,7 +60,7 @@ let sqlite = try? SQLite(path: dbPath) // with 'recreate: true', the sqlite file
 print(sqlite.dbPath) // -> path of the sqlite file
 ```
 
-**Modeling and creating a table**
+### Model and create a table
 
 ```swift
 let sqlTable = SQLTable(
@@ -79,7 +87,7 @@ let statementCreateTable = """
 try? sqlite?.createTable(sql: statementCreateTable)
 ```
 
-**SQL operations**
+### SQL operations
 
 ```swift
 do {
@@ -116,25 +124,30 @@ do {
 }
 ```
 
-```swift
-// Read methods return nil if no rows have been read
-let row = try sqlite.getByID(from: sqlTable, id: 10) // -> nil
+Read methods return `nil` if no rows have been read:
 
-// Insert, update, and delete methods return the number of changes made
+```swift
+let row = try sqlite.getByID(from: sqlTable, id: 10) // -> nil
+```
+
+Insert, update, and delete methods return the number of changes made:
+
+```swift
 let changes = try sqlite.deleteAllRows(in: sqlTable) // -> 1
 ```
 
-**Optional settings**
+### Optional settings
 
 ```swift
 sqlite.dateFormatter.locale = Locale(identifier: "en_US_POSIX")
 sqlite.dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
 sqlite.dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
 ```
- 
+
 More usage examples can be found in [tests](https://github.com/denissimon/SQLiteAdapter/blob/main/Tests/SQLiteAdapterTests/SQLiteAdapterTests.swift) and [iOS-MVVM-Clean-Architecture](https://github.com/denissimon/iOS-MVVM-Clean-Architecture) where this adapter was used.
 
-### Supported SQLite types
+Supported SQLite types
+----------------------
 
 ```swift
 case INT // Includes INT, INTEGER, INT2, INT8, BIGINT, MEDIUMINT, SMALLINT, TINYINT
@@ -145,7 +158,8 @@ case BLOB // Includes BLOB, BINARY, VARBINARY
 case DATE // Includes DATE, DATETIME, TIME, TIMESTAMP
 ```
 
-### Public methods 
+Public methods 
+--------------
 
 Can be extended and customized by inheriting the [SQLite](https://github.com/denissimon/SQLiteAdapter/blob/main/Sources/SQLiteAdapter/SQLiteAdapter.swift) class.
 
@@ -173,11 +187,6 @@ func getLastRow(from table: SQLTable) throws -> SQLValues?
 func vacuum() throws
 func query(sql: String, params: [Any]?) throws -> Int
 ```
-
-Requirements
-------------
-
-iOS 12.0+, macOS 10.13.0+, tvOS 12.0+, watchOS 4.0+
 
 License
 -------

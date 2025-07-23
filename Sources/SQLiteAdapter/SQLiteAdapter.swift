@@ -79,20 +79,20 @@ public protocol SQLiteType: Sendable {
 
 final public class SQLite: SQLiteType {
     
-    nonisolated(unsafe) public private(set) var dbPointer: OpaquePointer?
-    nonisolated(unsafe) public private(set) var dbPath: String!
+    nonisolated(unsafe) public private(set) var pointer: OpaquePointer?
+    public let path: String
     
     private let SQLITE_STATIC = unsafeBitCast(0, to: sqlite3_destructor_type.self)
     private let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
     
-    private let queue = DispatchQueue(label: "SQLite Queue")
+    private let queue = DispatchQueue(label: "com.sqlite.dispatch.queue")
     
     public let dateFormatter = DateFormatter()
     
     public var lastInsertID: Int {
         var id = 0
         queue.sync {
-            id = Int(sqlite3_last_insert_rowid(dbPointer))
+            id = Int(sqlite3_last_insert_rowid(pointer))
         }
         log("last inserted id: \(id)")
         return id
@@ -102,7 +102,7 @@ final public class SQLite: SQLiteType {
     public var changes: Int {
         var changes = 0
         queue.sync {
-            changes = Int(sqlite3_changes(dbPointer))
+            changes = Int(sqlite3_changes(pointer))
         }
         log("changes: \(changes)")
         return changes
@@ -112,22 +112,22 @@ final public class SQLite: SQLiteType {
     public var totalChanges: Int {
         var totalChanges = 0
         queue.sync {
-            totalChanges = Int(sqlite3_total_changes(dbPointer))
+            totalChanges = Int(sqlite3_total_changes(pointer))
         }
         log("total changes: \(totalChanges)")
         return totalChanges
     }
     
-    public init(path: String, recreateDB: Bool = false) throws {
-        if recreateDB {
-            try deleteDB(path: path)
-        }
+    /// - Parameter recreate: Set to `true` to have the sqlite file deleted and recreated. Defaults to `false`.
+    public init(path: String, recreate: Bool = false) throws {
+        self.path = path
+        
+        if recreate { try deleteDB(path: path) }
         
         var db: OpaquePointer?
         
         if sqlite3_open(path, &db) == SQLITE_OK {
-            dbPointer = db
-            dbPath = path
+            pointer = db
             setUp()
             log("database opened successfully, path: \(path)")
         } else {
@@ -136,15 +136,15 @@ final public class SQLite: SQLiteType {
                     sqlite3_close(db)
                 }
             }
-            dbPointer = nil
-            throw SQLiteError.OpenDB(getErrorMessage(dbPointer: db))
+            pointer = nil
+            throw SQLiteError.OpenDB("SQLite can't be opened")
         }
     }
     
     deinit {
-        if dbPointer != nil {
-            sqlite3_close(dbPointer)
-            dbPointer = nil
+        if pointer != nil {
+            sqlite3_close(pointer)
+            pointer = nil
         }
     }
     
@@ -169,8 +169,8 @@ final public class SQLite: SQLiteType {
         #endif
     }
     
-    private func getErrorMessage(dbPointer: OpaquePointer?) -> String {
-        if let errorPointer = sqlite3_errmsg(dbPointer) {
+    private func getErrorMessage(pointer: OpaquePointer?) -> String {
+        if let errorPointer = sqlite3_errmsg(pointer) {
             let errorMessage = String(cString: errorPointer)
             return errorMessage
         }
@@ -179,8 +179,8 @@ final public class SQLite: SQLiteType {
     
     private func prepareStatement(sql: String) throws -> OpaquePointer? {
         var queryStatement: OpaquePointer?
-        guard sqlite3_prepare_v2(dbPointer, sql, -1, &queryStatement, nil) == SQLITE_OK else {
-            throw SQLiteError.Prepare(getErrorMessage(dbPointer: dbPointer))
+        guard sqlite3_prepare_v2(pointer, sql, -1, &queryStatement, nil) == SQLITE_OK else {
+            throw SQLiteError.Prepare(getErrorMessage(pointer: pointer))
         }
         return queryStatement
     }
@@ -191,7 +191,7 @@ final public class SQLite: SQLiteType {
         let paramsCount = sqlite3_bind_parameter_count(sqlStatement)
         let count = params.count
         if paramsCount != Int32(count) {
-            throw SQLiteError.Bind(getErrorMessage(dbPointer: dbPointer))
+            throw SQLiteError.Bind(getErrorMessage(pointer: pointer))
         }
         
         for index in 0...(count-1) {
@@ -221,7 +221,7 @@ final public class SQLite: SQLiteType {
             }
             
             guard statusCode == SQLITE_OK else {
-                throw SQLiteError.Bind(getErrorMessage(dbPointer: dbPointer))
+                throw SQLiteError.Bind(getErrorMessage(pointer: pointer))
             }
         }
     }
@@ -238,10 +238,10 @@ final public class SQLite: SQLiteType {
             try bindPlaceholders(sqlStatement: sqlStatement, params: params)
             
             guard sqlite3_step(sqlStatement) == SQLITE_DONE else {
-                throw SQLiteError.Step(getErrorMessage(dbPointer: dbPointer))
+                throw SQLiteError.Step(getErrorMessage(pointer: pointer))
             }
             
-            return Int(sqlite3_changes(dbPointer))
+            return Int(sqlite3_changes(pointer))
         }
     }
     
@@ -413,7 +413,7 @@ final public class SQLite: SQLiteType {
                 sqlite3_finalize(sqlStatement)
             }
             guard sqlite3_step(sqlStatement) == SQLITE_ROW else {
-                throw SQLiteError.Step(getErrorMessage(dbPointer: dbPointer))
+                throw SQLiteError.Step(getErrorMessage(pointer: pointer))
             }
             count = sqlite3_column_int(sqlStatement, 0)
             log("successfully got a row count in \(table.name): \(count)")
@@ -435,7 +435,7 @@ final public class SQLite: SQLiteType {
             try bindPlaceholders(sqlStatement: sqlStatement, params: params)
             
             guard sqlite3_step(sqlStatement) == SQLITE_ROW else {
-                throw SQLiteError.Step(getErrorMessage(dbPointer: dbPointer))
+                throw SQLiteError.Step(getErrorMessage(pointer: pointer))
             }
             count = sqlite3_column_int(sqlStatement, 0)
             log("successfully got a row count with condition: \(count), sql: \(sql)")
@@ -463,7 +463,7 @@ final public class SQLite: SQLiteType {
             var rowValues: SQLValues = SQLValues([])
             
             guard let resultColumns = try? getResultColumns(table, sqlStatement: sqlStatement) else {
-                throw SQLiteError.Column(getErrorMessage(dbPointer: dbPointer))
+                throw SQLiteError.Column(getErrorMessage(pointer: pointer))
             }
             
             while sqlite3_step(sqlStatement) == SQLITE_ROW {
@@ -542,10 +542,10 @@ final public class SQLite: SQLiteType {
                 if let validatedColumnName = String(validatingCString: columnName) {
                     columnNamesToReturn.append(validatedColumnName)
                 } else {
-                    throw SQLiteError.Column(getErrorMessage(dbPointer: dbPointer))
+                    throw SQLiteError.Column(getErrorMessage(pointer: pointer))
                 }
             } else {
-                throw SQLiteError.Column(getErrorMessage(dbPointer: dbPointer))
+                throw SQLiteError.Column(getErrorMessage(pointer: pointer))
             }
         }
         var resultColumns: SQLTableColums = []

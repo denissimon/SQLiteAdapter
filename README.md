@@ -14,14 +14,14 @@ To install SQLiteAdapter using [Swift Package Manager](https://swift.org/package
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/denissimon/SQLiteAdapter.git", from: "0.8.0")
+    .package(url: "https://github.com/denissimon/SQLiteAdapter.git", from: "0.8.1")
 ]
 ```
 
 Or through Xcode:
 
 ```txt
-File -> Add Packages
+File -> Add Package Dependencies
 Enter Package URL: https://github.com/denissimon/SQLiteAdapter
 ```
 
@@ -53,12 +53,16 @@ Usage
 ```swift
 import SQLiteAdapter
 
-let dbPath = try! (FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
-    .appendingPathComponent("db.sqlite")).path // the sqlite file will be created if it does not already exist
-let sqlite = try? SQLite(path: dbPath) // with 'recreate: true', the sqlite file will be deleted and recreated
+// The sqlite file will be created if it does not already exist
+guard let dbPath = try? (FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
+    .appendingPathComponent("db.sqlite")).path else { return }
+
+guard let sqlite = try? SQLite(path: dbPath) else { return }
 
 print(sqlite.dbPath) // -> path of the sqlite file
 ```
+
+When initializing `SQLite` with `recreate: true`, the sqlite file will be deleted and recreated.
 
 ### Model and create a table
 
@@ -84,26 +88,29 @@ let statementCreateTable = """
     );
     """
 
-try? sqlite?.createTable(sql: statementCreateTable)
+try? sqlite.createTable(sql: statementCreateTable)
 ```
 
 ### SQL operations
+
+Some examples of SQL operations:
 
 ```swift
 do {
     var sql = "INSERT INTO \(sqlTable.name) (json, updated) VALUES (?, ?);"
     try sqlite.insertRow(sql: sql, params: ["someJson", Date()])
     
-    sql = "INSERT INTO \(sqlTable.name) (json, updated) VALUES (?, ?), (?, ?);"
-    let (changes, lastInsertID) = try sqlite.insertRow(sql: sql, params: [nil, Date(), nil, Date()])
-    assert((changes, lastInsertID) == (2, 3))
+    sql = "INSERT INTO \(sqlTable.name) (json, updated) VALUES (?, ?), (?, ?), (?, ?);"
+    let date = Date()
+    let (changes, lastInsertID) = try sqlite.insertRow(sql: sql, params: [nil, date, nil, date, nil, date])
+    assert((changes, lastInsertID) == (3, 4))
     
     sql = "UPDATE \(sqlTable.name) SET isDeleted = ?, updated = ? WHERE \(sqlTable.primaryKey) IN (2, 3)"
     try sqlite.updateRow(sql: sql, params: [true, Date()])
     assert(sqlite.changes == 2)
     
     sql = "SELECT * FROM \(sqlTable.name) WHERE isDeleted = ?"
-    if let rows = try sqlite.getRow(from: sqlTable, sql: sql, params: [true])
+    if let rows = try sqlite.getRow(from: sqlTable, sql: sql, params: [true]) {
         assert(rows.count == 2)
     }
     
@@ -111,16 +118,21 @@ do {
     try sqlite.deleteByID(in: sqlTable, id: 3)
     
     let rowCount = try sqlite.getRowCount(in: sqlTable)
-    assert(rowCount == 1)
+    assert(rowCount == 2)
     
     if let row = try sqlite.getFirstRow(from: sqlTable) {
-        assert(row[0].value as! Int == 1) // "id" INTEGER NOT NULL
-        assert(row[1].value as? String == "someJson") // "json" TEXT NULL
-        assert(row[2].value as! Bool == false) // "isDeleted" BOOLEAN DEFAULT 0 NOT NULL
-        assert((row[3].value as! Date) <= Date()) // "updated" DATETIME NOT NULL
+        assert(row[0].value as! Int == 1) // "id"
+        assert(row[1].value as? String == "someJson") // "json"
+        assert(row[2].value as! Bool == false) // "isDeleted"
+    }
+    
+    if let row = try sqlite.getLastRow(from: sqlTable) {
+        assert(row[0].value as! Int == 4) // "id"
+        assert(row[1].value as? String == nil) // "json"
+        assert(row[2].value as! Bool == false) // "isDeleted"
     }
 } catch {
-    print("SQLite:", error)
+    print(error.localizedDescription)
 }
 ```
 
@@ -133,7 +145,7 @@ let row = try sqlite.getByID(from: sqlTable, id: 10) // -> nil
 Insert, update, and delete methods return the number of changes made:
 
 ```swift
-let changes = try sqlite.deleteAllRows(in: sqlTable) // -> 1
+let changes = try sqlite.deleteAllRows(in: sqlTable) // -> 2
 ```
 
 ### Optional settings

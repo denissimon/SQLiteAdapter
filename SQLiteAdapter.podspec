@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = 'SQLiteAdapter'
-  s.version      = '0.8.0'
+  s.version      = '0.8.1'
   s.homepage     = 'https://github.com/denissimon/SQLiteAdapter'
   s.authors      = { 'Denis Simon' => 'denis.v.simon@gmail.com' }
   s.summary      = 'A simple wrapper around SQLite3'
